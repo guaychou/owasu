@@ -1,4 +1,4 @@
-FROM rust:1.59.0-alpine3.15 as build-env
+FROM rust:1.61.0-alpine3.15 as build-env
 WORKDIR /app
 ADD . /app
 RUN apk add --no-cache musl-dev            \

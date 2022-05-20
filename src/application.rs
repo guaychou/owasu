@@ -29,7 +29,7 @@ use tower::{
     timeout::TimeoutLayer,
     ServiceBuilder,
 };
-use tower_http::{trace::TraceLayer, ServiceBuilderExt};
+use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer, ServiceBuilderExt};
 use tracing::Span;
 
 /*
@@ -65,8 +65,15 @@ pub fn build(config: ServerConfig, seatalk: Seatalk) -> Application {
                 &tracing::field::display(response.status().as_u16()),
             );
             span.record("ms", &tracing::field::display(latency.as_millis()));
-            tracing::info!("response processed")
-        });
+            if response.status().as_u16() < 500 {
+                tracing::info!("response processed")
+            }
+        })
+        .on_failure(
+            |error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {
+                tracing::error!("{}", error)
+            },
+        );
     tracing::info!("Initialize middleware stack | {}", config);
     let middleware_stack = ServiceBuilder::new()
         .layer(HandleErrorLayer::new(handle_error))

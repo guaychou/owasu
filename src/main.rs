@@ -18,7 +18,7 @@ async fn main() {
     let apps = application::build(config.server, seatalk);
     let server = axum_server::bind(addr).handle(apps.handle).serve(
         apps.router
-            .into_make_service_with_connect_info::<SocketAddr, _>(),
+            .into_make_service_with_connect_info::<SocketAddr>(),
     );
     tracing::info!("Listening on {:?}", addr);
     if let Err(err) = server.await {

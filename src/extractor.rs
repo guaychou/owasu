@@ -30,22 +30,20 @@ where
             Err(rejection) => {
                 // convert the error from `axum::Json` into whatever we want
                 let (status, body): (_, Cow<'_, str>) = match rejection {
-                    JsonRejection::InvalidJsonBody(err) => (
+                    JsonRejection::JsonDataError(err) => (
                         StatusCode::BAD_REQUEST,
                         format!("Invalid JSON request: {}", err).into(),
                     ),
                     JsonRejection::MissingJsonContentType(err) => {
                         (StatusCode::BAD_REQUEST, err.to_string().into())
                     }
-                    JsonRejection::HeadersAlreadyExtracted(err) => {
-                        (StatusCode::INTERNAL_SERVER_ERROR, err.to_string().into())
-                    }
+
                     err => (
                         StatusCode::INTERNAL_SERVER_ERROR,
                         format!("Unknown internal error: {}", err).into(),
                     ),
                 };
-
+                tracing::error!("{body}");
                 Err((
                     status,
                     // we use `axum::Json` here to generate a JSON response

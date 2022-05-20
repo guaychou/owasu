@@ -42,6 +42,7 @@ impl IntoResponse for AppError {
             "code" : status.as_u16(),
             "error": error_message,
         }));
+        tracing::error!("{error_message}");
         (status, body).into_response()
     }
 }
